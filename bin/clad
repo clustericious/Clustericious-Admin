@@ -39,6 +39,19 @@ A sample configuration file ~/etc/Clad.conf :
         config_update       : cd etc && git pull
         config_destroy      : rm -rf etc
 
+=head1 NOTES
+
+Manipulating .ssh/config can allow you to reach the head node of
+a cluster by proxying through another host.  For instance :
+
+    Host devarch11
+    User omidev
+    ProxyCommand ssh omidev.gsfc.nasa.gov nc %h %p
+
+    Host devarch12
+    User omidev
+    ProxyCommand ssh omidev.gsfc.nasa.gov nc %h %p
+
 =head1 SEE ALSO
 
  Log::Log4perl::CommandLine
