@@ -2,9 +2,21 @@
 
 Clustericious::Admin - Administer clustericious clusters.
 
-=head1 VERSION
+=head1 DESCRIPTION
 
-Version 0.01
+This is a tool for executing commands on all the hosts
+within a cluster.
+
+A configuration file specifies hosts in a cluster,
+command aliases, and environment settings.
+
+Then typing "clad <cluster> <command>" runs
+the command on every host in the named cluster.
+
+=head1 SEE ALSO
+
+Log::Log4perl::CommandLine
+The eg/ directory, for sample configurations.
 
 =cut
 
