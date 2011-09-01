@@ -15,8 +15,7 @@ the command on every host in the named cluster.
 
 =head1 SEE ALSO
 
-Log::Log4perl::CommandLine
-The eg/ directory, for sample configurations.
+clad
 
 =cut
 
