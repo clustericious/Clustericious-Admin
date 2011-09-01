@@ -1,8 +1,7 @@
 bin/clad
 Build.PL
-lib/Clustericious/.Admin.pm.swp
 lib/Clustericious/Admin.pm
-MANIFEST			This list of files
+MANIFEST
 README
 t/00-load.t
 t/pod.t
