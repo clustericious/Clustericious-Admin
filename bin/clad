@@ -16,22 +16,27 @@ All commands are also defined in the config file.
 Read a config file containing a cluster name and a command.
 Ssh to every host in the cluster and run the command.
 
-=head1 EXAMPLE
+=head1 SAMPLE CONFIGURATION
 
----
-%# ~/etc/Clad.conf
-env :
-    PATH : /util/bin:/usr/kerberos/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
-    PERL5LIB : /util/lib/perl
-clusters :
-    devarch:
-        - devarch11
-        - devarch12
-commands :
-    update_config :
-        - 'cd etc && git pull'
-    init_config :
-        - 'git clone acpsdev2:/cm/git/config/$_[0]'
+A sample configuration file ~/etc/Clad.conf :
+
+    ---
+    env :
+        PATH : /util/bin:/usr/kerberos/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+        PERL5LIB : /util/lib/perl
+    clusters :
+        devarch:
+            - devarch11
+            - devarch12
+    commands :
+        ls : ls
+        env : env
+        yars_start : 'yars start'
+        yars_stop : 'yars stop'
+        config_init_devarch : 'git clone acpsdev2:/cm/git/config/config-devarch etc'
+        config_show : 'cat etc/*'
+        config_update : 'cd etc && git pull'
+        config_destroy : 'rm -rf etc'
 
 =cut
 
