@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+use feature 'say';
 
 =head1 NAME
 
@@ -55,7 +56,12 @@ use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib', 'perl';
 
 use Clustericious::Admin;
 
-die "usage $0 <cluster> <command>\n" unless @ARGV==2;
+unless (@ARGV >=2 ) {
+    say "usage $0 <cluster> <command>";
+    say "Available clusters : ".join ' ', Clustericious::Admin->clusters;
+    say "Available commands : ".join ' ', Clustericious::Admin->commands;
+    exit;
+}
 
 Clustericious::Admin->run(@ARGV);
 

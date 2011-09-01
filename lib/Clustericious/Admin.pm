@@ -34,6 +34,12 @@ use strict;
 our $VERSION = '0.01';
 our @colors = qw/cyan green/;
 
+sub _conf {
+    our $conf;
+    $conf ||= Clustericious::Config->new("Clad");
+    return $conf;
+}
+
 sub _run_command {
     my ($color,$env,$host,@command) = @_;
     my $ipc;
@@ -70,20 +76,28 @@ sub _run_command {
     TRACE "exit code for $host : $exit";
 }
 
+sub clusters {
+    my %clusters = _conf->clusters;
+    return sort keys %clusters;
+}
+
+sub commands {
+    my %commands = _conf->commands;
+    return sort keys %commands;
+}
+
 sub run {
     my $class = shift;
-    my $conf = Clustericious::Config->new("Clad");
     my ($cluster,$command) = @_;
+    LOGDIE "Missing cluster or command" unless $cluster && $command;
     DEBUG "Running $command on cluster $cluster";
-    my %clusters = $conf->clusters;
-    my %commands = $conf->commands;
-    my @hosts = $conf->clusters->$cluster( default => [] )
-      or LOGDIE("Cluster '$cluster' not found.  Available clusters : @{[ keys %clusters ]}\n");
-    my @command = $conf->commands->$command(default => [] )
-      or LOGDIE("Command '$command' not found.\nAvailable commands : @{[ keys %commands ]}\n");
+    my @hosts = _conf->clusters->$cluster( default => [] )
+      or LOGDIE("Cluster '$cluster' not found");
+    my @command = _conf->commands->$command(default => [] )
+      or LOGDIE("Command '$command' not found.");
     my $pm = Parallel::ForkManager->new(10);
     my $i = 0;
-    my $env = $conf->env(default => {});
+    my $env = _conf->env(default => {});
     for my $host (@hosts) {
         $i++;
         $i = 0 if $i==@colors;
