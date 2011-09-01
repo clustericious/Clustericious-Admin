@@ -1,0 +1,58 @@
+#!/usr/bin/env perl
+
+=head1 NAME
+
+clad -- Clustericious Admin command line tool
+
+=head1 SYNOPSYS
+
+clad <cluster> <command>
+
+All clusters are defined in the config file.
+All commands are also defined in the config file.
+
+=head1 DESCRIPTION
+
+Read a config file containing a cluster name and a command.
+Ssh to every host in the cluster and run the command.
+
+=head1 EXAMPLE
+
+---
+%# ~/etc/Clad.conf
+env :
+    PATH : /util/bin:/usr/kerberos/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+    PERL5LIB : /util/lib/perl
+clusters :
+    devarch:
+        - devarch11
+        - devarch12
+commands :
+    update_config :
+        - 'cd etc && git pull'
+    init_config :
+        - 'git clone acpsdev2:/cm/git/config/$_[0]'
+
+=cut
+
+use File::Basename 'dirname';
+use File::Spec;
+use Log::Log4perl::CommandLine (':all', ':loginit' => <<"EOT");
+           log4perl.rootLogger = INFO, Screen
+           log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
+           log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+           log4perl.appender.Screen.layout.ConversionPattern = @{[ $ENV{HARNESS_ACTIVE} ? '#' : '' ]} [%-5p] %d %F{1} (%L) %m %n
+EOT
+
+use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'lib';
+use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib';
+use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib', 'perl';
+
+use Clustericious::Admin;
+
+die "usage $0 <cluster> <command>\n" unless @ARGV==2;
+
+Clustericious::Admin->run(@ARGV);
+
+1;
+

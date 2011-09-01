@@ -1,0 +1,22 @@
+use strict;
+use warnings;
+use Module::Build;
+
+my $builder = Module::Build->new(
+    module_name         => 'Clustericious::Admin',
+    license             => 'perl',
+    dist_author         => q{Brian Duggan <brian.duggan@nasa.gov>},
+    dist_version_from   => 'lib/Clustericious/Admin.pm',
+    build_requires => {
+        'Test::More'            => 0,
+        'IPC::PerlSSH'          => 0,
+        'Term::ANSIColor'       => 0,
+        'Clustericious::Config' => 0,
+        'Clustericious::Log'    => 0,
+        'Parallel::ForkManager' => 0,
+      },
+    add_to_cleanup      => [ 'Clustericious-Admin-*' ],
+    create_makefile_pl => 'traditional',
+);
+
+$builder->create_build_script();
