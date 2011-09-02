@@ -20,7 +20,7 @@ name: Clustericious-Admin
 provides:
   Clustericious::Admin:
     file: lib/Clustericious/Admin.pm
-    version: 0.01
+    version: 0.02
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02

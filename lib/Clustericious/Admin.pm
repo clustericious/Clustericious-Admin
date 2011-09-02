@@ -30,7 +30,7 @@ use Term::ANSIColor;
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our @colors = qw/cyan green/;
 
 sub _conf {

@@ -1,9 +1,10 @@
 bin/clad
 Build.PL
+eg/Clad.conf
 lib/Clustericious/Admin.pm
+Makefile.PL
 MANIFEST
+META.yml
 README
 t/00-load.t
 t/pod.t
-Makefile.PL
-META.yml
