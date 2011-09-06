@@ -23,7 +23,8 @@ package Clustericious::Admin;
 
 use Clustericious::Config;
 use Clustericious::Log;
-use IPC::PerlSSH;
+use IPC::Open3 qw/open3/;
+use Symbol 'gensym';
 use IO::Handle;
 use Term::ANSIColor;
 use Mojo::IOLoop;
@@ -34,6 +35,24 @@ use strict;
 our $VERSION = '0.02';
 our @colors = qw/cyan green/;
 our %waiting;
+our %filtering;
+our @filter = ( (split /\n/, <<DONE), "", "" );
+
+      ---------------------------------------------------------------
+
+              WARNING!  This is a U.S. Government Computer
+
+        This U.S. Government computer is for authorized users only.
+
+        By accessing this system, you are consenting to complete
+        monitoring with no expectation of privacy.  Unauthorized
+        access or use may subject you to disciplinary action and 
+        criminal prosecution.
+
+      ---------------------------------------------------------------
+
+
+DONE
 
 sub _conf {
     our $conf;
@@ -47,19 +66,16 @@ sub _queue_command {
     while (my ($k,$v) = each %$env) {
         unshift @command, "$k=$v";
     }
-    no warnings 'once';
 
-    # Suppress STDERR (login banner)
-    open( DUPERR, ">&STDERR" )
-      or warn("::IPS Warning: Unable to dup STDERR\n");
-    close(STDERR);
+    my($wtr, $ssh, $err);
+    $err = gensym;
+    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh $host '@command'") or do {
+        WARN "Cannot ssh to $host: $!";
+        return;
+    };
 
-    # Create a file descriptor
-    open my $ssh, '-|', "ssh $host '@command'" or LOGDIE "Can't ssh to $host: $!";
+    $waiting{$host} = $pid;
 
-    # Reopen STDERR
-    open( STDERR, ">&DUPERR" );
-    $waiting{$host} = 1;
     $w->add( $ssh,
         on_readable => sub {
             my ($watcher, $handle) = @_;
@@ -74,6 +90,36 @@ sub _queue_command {
             chomp (my $line = <$handle>);
             print color $color;
             print "[$host] ";
+            print color 'reset';
+            print "$line\n";
+         });
+
+    $w->add(
+        $err,
+        on_readable => sub {
+            my ($watcher, $handle) = @_;
+            if (eof($handle)) {
+                $watcher->remove($handle);
+                delete $waiting{$host};
+                Mojo::IOLoop->stop unless keys %waiting > 0;
+                return;
+            }
+            $filtering{$host} = [ @filter ] unless defined($filtering{$host});
+            my $skip;
+            chomp (my $line = <$handle>);
+            if (scalar @{ $filtering{$host} }) {
+                my $f = $filtering{$host}->[0];
+                if ($f eq $line) {
+                    $skip = 1;
+                    shift @{ $filtering{$host} };
+                } else {
+                    DEBUG "line   : '$line'";
+                    DEBUG "filter : '$f'";
+                }
+            }
+            return if $skip;
+            print color $color;
+            print "[$host (stderr)] ";
             print color 'reset';
             print "$line\n";
          });
