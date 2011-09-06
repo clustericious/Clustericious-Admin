@@ -4,7 +4,13 @@ WriteMakefile
 (
           'NAME' => 'Clustericious::Admin',
           'VERSION_FROM' => 'lib/Clustericious/Admin.pm',
-          'PREREQ_PM' => {},
+          'PREREQ_PM' => {
+                           'Clustericious::Config' => 0,
+                           'Clustericious::Log' => 0,
+                           'Mojolicious' => 0,
+                           'Term::ANSIColor' => 0,
+                           'Test::More' => 0
+                         },
           'INSTALLDIRS' => 'site',
           'EXE_FILES' => [
                            'bin/clad'
