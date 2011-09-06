@@ -7,10 +7,12 @@ clad -- Clustericious Admin command line tool
 
 =head1 SYNOPSYS
 
+clad devarch env
+clad -n devarch env
 clad <cluster> <command>
 
 All clusters are defined in the config file.
-All commands are also defined in the config file.
+Commands may be aliases defined in the config file.
 
 =head1 DESCRIPTION
 
@@ -29,12 +31,10 @@ A sample configuration file ~/etc/Clad.conf :
         devarch:
             - devarch11
             - devarch12
-    commands :
-        ls                  : ls
-        env                 : env
-        yars_start          : yars start
-        yars_stop           : yars stop
+    aliases :
         config_init_devarch : git clone acpsdev2:/cm/git/config/config-devarch etc
+    %# Note that $CLUSTER becomes the name of the cluster.
+        config_init         : git clone acpsdev2:/cm/git/config/config-$CLUSTER etc
         config_show         : cat etc/*
         config_update       : cd etc && git pull
         config_destroy      : rm -rf etc
@@ -75,9 +75,10 @@ use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib', 'perl';
 use Clustericious::Admin;
 
 unless (@ARGV >=2 ) {
+    say "Not enough arguments : @ARGV";
     say "usage $0 <cluster> <command>";
     say "Available clusters : ".join ' ', Clustericious::Admin->clusters;
-    say "Available commands : ".join ' ', Clustericious::Admin->commands;
+    say "Available aliases  : ".join ' ', Clustericious::Admin->aliases;
     exit;
 }
 

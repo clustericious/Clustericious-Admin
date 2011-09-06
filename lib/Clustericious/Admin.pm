@@ -27,6 +27,7 @@ use IPC::PerlSSH;
 use Parallel::ForkManager;
 use IO::Handle;
 use Term::ANSIColor;
+use String::Template;
 use warnings;
 use strict;
 
@@ -80,20 +81,21 @@ sub clusters {
     return sort keys %clusters;
 }
 
-sub commands {
-    my %commands = _conf->commands;
-    return sort keys %commands;
+sub aliases {
+    my %aliases = _conf->aliases;
+    return sort keys %aliases;
 }
 
 sub run {
     my $class = shift;
-    my ($cluster,$command) = @_;
-    LOGDIE "Missing cluster or command" unless $cluster && $command;
-    DEBUG "Running $command on cluster $cluster";
+    my $dry_run = ($_[0] eq '-n' ? shift : 0);
+    my $cluster = shift or LOGDIE "Missing cluster";
     my @hosts = _conf->clusters->$cluster( default => [] )
       or LOGDIE("Cluster '$cluster' not found");
-    my @command = _conf->commands->$command(default => [] )
-      or LOGDIE("Command '$command' not found.");
+    my $alias = $_[0] or LOGDIE "No command given";
+    my @command = _conf->aliases->$alias(default => [@_] );
+    s/\$CLUSTER/$cluster/ for @command;
+    DEBUG "Running @command on cluster $cluster";
     my $pm = Parallel::ForkManager->new(10);
     my $i = 0;
     my $env = _conf->env(default => {});
@@ -101,8 +103,12 @@ sub run {
         $i++;
         $i = 0 if $i==@colors;
         $pm->start and next;
-        TRACE "Running @command on $host";
-        _run_command($colors[$i],$env,$host,@command);
+        if ($dry_run) {
+            INFO "Not running on $host : @command";
+        } else {
+            TRACE "Running on $host : @command";
+            _run_command($colors[$i],$env,$host,@command);
+        }
         $pm->finish;
     }
     $pm->wait_all_children;
