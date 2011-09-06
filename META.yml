@@ -2,13 +2,6 @@
 abstract: 'Administer clustericious clusters.'
 author:
   - 'Brian Duggan <brian.duggan@nasa.gov>'
-build_requires:
-  Clustericious::Config: 0
-  Clustericious::Log: 0
-  IPC::PerlSSH: 0
-  Parallel::ForkManager: 0
-  Term::ANSIColor: 0
-  Test::More: 0
 configure_requires:
   Module::Build: 0.36
 generated_by: 'Module::Build version 0.3603'
@@ -20,7 +13,7 @@ name: Clustericious-Admin
 provides:
   Clustericious::Admin:
     file: lib/Clustericious/Admin.pm
-    version: 0.02
+    version: 0.03
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.02
+version: 0.03
