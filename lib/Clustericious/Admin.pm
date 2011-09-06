@@ -24,15 +24,16 @@ package Clustericious::Admin;
 use Clustericious::Config;
 use Clustericious::Log;
 use IPC::PerlSSH;
-use Parallel::ForkManager;
 use IO::Handle;
 use Term::ANSIColor;
-use String::Template;
+use Mojo::IOLoop;
+
 use warnings;
 use strict;
 
 our $VERSION = '0.02';
 our @colors = qw/cyan green/;
+my %waiting;
 
 sub _conf {
     our $conf;
@@ -40,40 +41,41 @@ sub _conf {
     return $conf;
 }
 
-sub _run_command {
-    my ($color,$env,$host,@command) = @_;
-    my $ipc;
+sub _queue_command {
+    my ($w,$color,$env,$host,@command) = @_;
 
-    {
-        no warnings 'once';
-        autoflush STDERR 1;
-
-        # Suppress STDERR (login banner)
-        open( DUPERR, ">&STDERR" )
-          or warn("::IPS Warning: Unable to dup STDERR\n");
-        close(STDERR);
-
-        # Create an IPC::PerlSSH object
-        $ipc = IPC::PerlSSH->new(Host  => $host) or do {
-            WARN "Could not connect to $host";
-            return;
-        };
-        $ipc->use_library("Run", ("system_inout","system_outerr"));
-
-        # Reopen STDERR
-        open( STDERR, ">&DUPERR" );
-    }
     while (my ($k,$v) = each %$env) {
         unshift @command, "$k=$v";
     }
-    my ($exit, $out, $stderr) = $ipc->call("system_outerr", "@command");
-    for (split /\n/, $out) {
-        print color $color;
-        print "[$host] ";
-        print color 'reset';
-        print "$_\n";
-    }
-    TRACE "exit code for $host : $exit";
+    no warnings 'once';
+
+    # Suppress STDERR (login banner)
+    open( DUPERR, ">&STDERR" )
+      or warn("::IPS Warning: Unable to dup STDERR\n");
+    close(STDERR);
+
+    # Create a file descriptor
+    open my $ssh, '-|', "ssh $host '@command'" or LOGDIE "Can't ssh to $host: $!";
+
+    # Reopen STDERR
+    open( STDERR, ">&DUPERR" );
+    $w->add( $ssh,
+        on_readable => sub {
+            my ($watcher, $handle) = @_;
+            if (eof($handle)) {
+                $watcher->remove($handle);
+                delete $waiting{$host};
+                if (keys %waiting == 0) {
+                    Mojo::IOLoop->timer(1 => sub { Mojo::IOLoop->stop });
+                }
+                return;
+            }
+            chomp (my $line = <$handle>);
+            print color $color;
+            print "[$host] ";
+            print color 'reset';
+            print "$line\n";
+         });
 }
 
 sub clusters {
@@ -96,22 +98,20 @@ sub run {
     my @command = _conf->aliases->$alias(default => [@_] );
     s/\$CLUSTER/$cluster/ for @command;
     DEBUG "Running @command on cluster $cluster";
-    my $pm = Parallel::ForkManager->new(10);
     my $i = 0;
     my $env = _conf->env(default => {});
+    my $w = Mojo::IOLoop->singleton->iowatcher;
     for my $host (@hosts) {
         $i++;
         $i = 0 if $i==@colors;
-        $pm->start and next;
         if ($dry_run) {
             INFO "Not running on $host : @command";
         } else {
             TRACE "Running on $host : @command";
-            _run_command($colors[$i],$env,$host,@command);
+            _queue_command($w,$colors[$i],$env,$host,@command);
         }
-        $pm->finish;
     }
-    $pm->wait_all_children;
+    Mojo::IOLoop->start;
 }
 
 1;
