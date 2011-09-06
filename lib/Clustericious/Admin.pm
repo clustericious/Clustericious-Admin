@@ -33,7 +33,7 @@ use strict;
 
 our $VERSION = '0.02';
 our @colors = qw/cyan green/;
-my %waiting;
+our %waiting;
 
 sub _conf {
     our $conf;
@@ -59,6 +59,7 @@ sub _queue_command {
 
     # Reopen STDERR
     open( STDERR, ">&DUPERR" );
+    $waiting{$host} = 1;
     $w->add( $ssh,
         on_readable => sub {
             my ($watcher, $handle) = @_;
@@ -110,6 +111,11 @@ sub run {
             TRACE "Running on $host : @command";
             _queue_command($w,$colors[$i],$env,$host,@command);
         }
+    }
+    if (Log::Log4perl::get_logger()->is_trace) {
+        Mojo::IOLoop->singleton->recurring(2 => sub {
+                TRACE "Waiting for hosts : ".(join ' ', keys %waiting);
+            });
     }
     Mojo::IOLoop->start;
 }
