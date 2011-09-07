@@ -63,20 +63,30 @@ sub _conf {
     return $conf;
 }
 
+sub _is_builtin {
+    return $_[0] =~ /^cd /;
+}
+
 sub _queue_command {
     my ($w,$color,$env,$host,@command) = @_;
 
-    while (my ($k,$v) = each %$env) {
-        unshift @command, "$k=$v";
-    }
-    unshift @command, qw/env/;
-
     my($wtr, $ssh, $err);
     $err = gensym;
-    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh $host '@command'") or do {
+    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh -T $host") or do {
         WARN "Cannot ssh to $host: $!";
         return;
     };
+
+    for my $cmd (@command) {
+        my @cmd = $cmd;
+        unless (_is_builtin($cmd)) {
+            while (my ($k,$v) = each %$env) {
+                unshift @cmd, "$k=$v";
+            }
+            unshift @cmd, qw/env/;
+        }
+        print $wtr "@cmd\n";
+    }
 
     $waiting{$host} = $pid;
 
@@ -161,7 +171,7 @@ sub run {
         $i++;
         $i = 0 if $i==@colors;
         if ($dry_run) {
-            INFO "Not running on $host : @command";
+            INFO "Not running on $host : ".join '; '.@command;
         } else {
             TRACE "Running on $host : @command";
             _queue_command($w,$colors[$i],$env,$host,@command);

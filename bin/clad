@@ -30,6 +30,28 @@ and each host.
  clad devarch df -kh
  clad --trace root devarch ping -i 1 localhost
 
+=head1 CONFIGURATION
+
+The configuration file is a Clustericious::Config
+file (yaml or json, Mojo templates) and
+has three sections :
+
+env : sets the environment for all commands.
+Environment settings will be added to any
+environment which is set upon connection
+by ssh.
+
+clusters : describes the clusters.  A cluster
+is just a label and a list of hosts.
+
+aliases : command aliases.  These may be either
+a single command or a list of commands.  Lists
+of commands will all be run in the same ssh
+session.  Environment variables in the env
+section will be set before running commands
+(but shell builtins like 'cd' will be run
+without any environment setup)
+
 =head1 SAMPLE CONFIGURATION
 
 A sample configuration file ~/etc/Clad.conf :
@@ -45,10 +67,12 @@ A sample configuration file ~/etc/Clad.conf :
     aliases :
         config_init_devarch : git clone acpsdev2:/cm/git/config/config-devarch etc
     %# Note that $CLUSTER becomes the name of the cluster.
-        config_init         : git clone acpsdev2:/cm/git/config/config-$CLUSTER etc
-        config_show         : cat etc/*
-        config_update       : cd etc && git pull
-        config_destroy      : rm -rf etc
+        config_init       : git clone acpsdev2:/cm/git/config/config-$CLUSTER etc
+        config_show       : cat etc/*
+        config_pull       :
+            - cd etc
+            - git pull
+        config_destroy    : rm -rf etc
 
 =head1 NOTES
 
