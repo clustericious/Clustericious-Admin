@@ -161,7 +161,7 @@ sub run {
     my @hosts = _conf->clusters->$cluster( default => [] )
       or LOGDIE("Cluster '$cluster' not found");
     my $alias = $_[0] or LOGDIE "No command given";
-    my @command = _conf->aliases->$alias(default => [@_] );
+    my @command = _conf->aliases->$alias(default => "@_" );
     s/\$CLUSTER/$cluster/ for @command;
     DEBUG "Running @command on cluster $cluster";
     my $i = 0;
