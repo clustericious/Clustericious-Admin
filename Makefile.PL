@@ -7,6 +7,7 @@ WriteMakefile
           'PREREQ_PM' => {
                            'Clustericious::Config' => 0,
                            'Clustericious::Log' => 0,
+                           'Log::Log4perl::CommandLine' => 0,
                            'Mojolicious' => 0,
                            'Term::ANSIColor' => 0,
                            'Test::More' => 0
