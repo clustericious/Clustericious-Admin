@@ -39,7 +39,7 @@ our $VERSION = '0.06';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
-our @filter = ( (split /\n/, <<DONE), "", "" );
+our @filter = ( (split /\n/, <<DONE), "", "", "" );
 
       ---------------------------------------------------------------
 
@@ -108,17 +108,22 @@ sub _queue_command {
                 Mojo::IOLoop->stop unless keys %waiting > 0;
                 return;
             }
-            $filtering{$host} = [ @filter ] unless defined($filtering{$host});
             my $skip;
             chomp (my $line = <$handle>);
+            if (!defined($filtering{$host})) {
+                $filtering{$host} = [ @filter ];
+            } elsif ($line eq (' 'x 6).('-' x 63) && !@{ $filtering{$host} }) {
+                TRACE "filtering banner";
+                $filtering{$host} = [ @filter ];
+                shift @{ $filtering{$host} };
+            }
             if (scalar @{ $filtering{$host} }) {
                 my $f = $filtering{$host}->[0];
                 if ($f eq $line) {
                     $skip = 1;
                     shift @{ $filtering{$host} };
                 } else {
-                    DEBUG "line   : '$line'";
-                    DEBUG "filter : '$f'";
+                    DEBUG "line vs filter  : '$line' vs '$f'";
                 }
             }
             return if $skip;
