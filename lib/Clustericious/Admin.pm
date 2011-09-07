@@ -35,7 +35,7 @@ use Mojo::IOLoop;
 use warnings;
 use strict;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
