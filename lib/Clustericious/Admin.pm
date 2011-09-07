@@ -168,7 +168,7 @@ sub run {
                 TRACE "Waiting for hosts : ".(join ' ', keys %waiting);
             });
     }
-    Mojo::IOLoop->start;
+    Mojo::IOLoop->start unless $dry_run;
 }
 
 1;
