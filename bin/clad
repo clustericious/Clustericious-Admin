@@ -1,23 +1,34 @@
 #!/usr/bin/env perl
-use feature 'say';
 
 =head1 NAME
 
 clad -- Clustericious Admin command line tool
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
-clad devarch env
-clad -n devarch env
-clad <cluster> <command>
-
-All clusters are defined in the config file.
-Commands may be aliases defined in the config file.
+    clad [log options] [-n] <cluster> <command>
 
 =head1 DESCRIPTION
 
 Read a config file containing a cluster name and a command.
 Ssh to every host in the cluster and run the command.
+
+=head1 OPTIONS
+
+=over
+
+=item B<-n>
+
+Dry run, just show the command that would be executed
+and each host.
+
+=back
+
+=head1 EXAMPLES
+
+ clad -n devarch uname -a
+ clad devarch df -kh
+ clad --trace root devarch ping -i 1 localhost
 
 =head1 SAMPLE CONFIGURATION
 
@@ -59,6 +70,7 @@ a cluster by proxying through another host.  For instance :
 
 =cut
 
+use feature 'say';
 use File::Basename 'dirname';
 use File::Spec;
 use Log::Log4perl::CommandLine (':all', ':loginit' => <<"EOT");
