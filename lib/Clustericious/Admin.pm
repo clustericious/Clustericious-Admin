@@ -72,7 +72,7 @@ sub _queue_command {
 
     my($wtr, $ssh, $err);
     $err = gensym;
-    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh -T $host") or do {
+    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh -T $host /bin/sh") or do {
         WARN "Cannot ssh to $host: $!";
         return;
     };
