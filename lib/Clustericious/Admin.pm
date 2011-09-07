@@ -13,9 +13,8 @@ command aliases, and environment settings.
 Then typing "clad <cluster> <command>" runs
 the command on every host in the named cluster.
 
-Commands are run in a controlled environment.  Environment
-variables can be set using the env entry in the configuration
-file.
+Environment variables can be set using the env entry
+in the configuration file.
 
 =head1 SEE ALSO
 
@@ -70,7 +69,7 @@ sub _queue_command {
     while (my ($k,$v) = each %$env) {
         unshift @command, "$k=$v";
     }
-    unshift @command, qw/env -i/;
+    unshift @command, qw/env/;
 
     my($wtr, $ssh, $err);
     $err = gensym;
