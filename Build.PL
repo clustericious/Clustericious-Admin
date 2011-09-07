@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
         'Mojolicious'           => 0,
         'Clustericious::Config' => 0,
         'Clustericious::Log'    => 0,
+        'Log::Log4perl::CommandLine' => 0,
       },
     add_to_cleanup      => [ 'Clustericious-Admin-*' ],
     create_makefile_pl => 'traditional',
