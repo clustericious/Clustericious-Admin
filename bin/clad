@@ -25,6 +25,10 @@ of the login shell for the remote user.
 Dry run, just show the command that would be executed
 and each host.
 
+=item B<-a>
+
+Don't colorize the host names in the output.
+
 =back
 
 =head1 EXAMPLES
@@ -124,6 +128,7 @@ use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib';
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib', 'perl';
 
 use Clustericious::Admin;
+use Getopt::Std qw/getopts/;
 
 unless (@ARGV >=2 ) {
     say "Not enough arguments : @ARGV";
@@ -133,7 +138,9 @@ unless (@ARGV >=2 ) {
     exit;
 }
 
-Clustericious::Admin->run(@ARGV);
+my %opts;
+getopts('na',\%opts);
+Clustericious::Admin->run(\%opts,@ARGV);
 
 1;
 

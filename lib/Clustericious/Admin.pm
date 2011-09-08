@@ -109,9 +109,9 @@ sub _queue_command {
                 return;
             }
             chomp (my $line = <$handle>);
-            print color $color;
+            print color $color if @colors;
             print "[$host] ";
-            print color 'reset';
+            print color 'reset' if @colors;
             print "$line\n";
          });
 
@@ -162,9 +162,11 @@ sub aliases {
 
 sub run {
     my $class = shift;
-    my $dry_run = ($_[0] eq '-n' ? shift : 0);
+    my $opts = shift;
+    my $dry_run = $opts->{n};
+    @colors = () if $opts->{a};
     my $cluster = shift or LOGDIE "Missing cluster";
-    my $hosts = _conf->clusters->$cluster;
+    my $hosts = _conf->clusters->$cluster(default => '') or LOGDIE "no hosts for cluster $cluster";
     my @hosts;
     if (ref $hosts eq 'ARRAY') {
         @hosts = @$hosts;
