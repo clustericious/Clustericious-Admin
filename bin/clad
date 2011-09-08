@@ -45,7 +45,14 @@ environment which is set upon connection
 by ssh.
 
 clusters : describes the clusters.  A cluster
-is just a label and a list of hosts.
+is a label and a list of hosts. Each host
+can be either a hostname or an array of hostnames.
+If it is an array of hostnames it will be treated
+as a sequence of hosts through which to proxy, e.g.
+    ssh host1 ssh host2 ssh host3...
+If the first proxy host is the same for all the hosts
+in a cluster, then it can be given separately (see
+the example below).
 
 aliases : command aliases.  These may be either
 a single command or a list of commands.  Lists
@@ -67,6 +74,11 @@ A sample configuration file ~/etc/Clad.conf :
         devarch:
             - devarch11
             - devarch12
+        testarch:
+            proxy : omitest.omisips.gsfc.nasa.gov
+            hosts :
+                - acpstestarch3
+                - acpstestarch4
     aliases :
         config_init_devarch : git clone acpsdev2:/cm/git/config/config-devarch etc
     %# Note that $CLUSTER becomes the name of the cluster.

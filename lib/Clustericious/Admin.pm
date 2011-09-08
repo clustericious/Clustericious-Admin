@@ -72,7 +72,14 @@ sub _queue_command {
 
     my($wtr, $ssh, $err);
     $err = gensym;
-    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; ssh -T $host /bin/sh") or do {
+    my $ssh_cmd;
+    if (ref $host eq 'ARRAY') {
+        $ssh_cmd = join ' ', map "ssh $_", @$host;
+        $host = $host->[1];
+    } else {
+        $ssh_cmd = "ssh -T $host";
+    }
+    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; $ssh_cmd /bin/sh") or do {
         WARN "Cannot ssh to $host: $!";
         return;
     };
@@ -157,8 +164,15 @@ sub run {
     my $class = shift;
     my $dry_run = ($_[0] eq '-n' ? shift : 0);
     my $cluster = shift or LOGDIE "Missing cluster";
-    my @hosts = _conf->clusters->$cluster( default => [] )
-      or LOGDIE("Cluster '$cluster' not found");
+    my $hosts = _conf->clusters->$cluster;
+    my @hosts;
+    if (ref $hosts eq 'ARRAY') {
+        @hosts = @$hosts;
+    } else {
+        my $proxy = $hosts->proxy(default => '');
+        @hosts = map [ $proxy, $_ ], $hosts->hosts;
+    }
+    LOGDIE "no hosts found" unless @hosts;
     my $alias = $_[0] or LOGDIE "No command given";
     my @command = _conf->aliases->$alias(default => "@_" );
     s/\$CLUSTER/$cluster/ for @command;
