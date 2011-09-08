@@ -123,7 +123,6 @@ sub _queue_command {
             if (!defined($filtering{$host})) {
                 $filtering{$host} = [ @filter ];
             } elsif ($line eq (' 'x 6).('-' x 63) && !@{ $filtering{$host} }) {
-                TRACE "filtering banner";
                 $filtering{$host} = [ @filter ];
                 shift @{ $filtering{$host} };
             }
@@ -133,7 +132,7 @@ sub _queue_command {
                     $skip = 1;
                     shift @{ $filtering{$host} };
                 } else {
-                    DEBUG "line vs filter  : '$line' vs '$f'";
+                    DEBUG "line vs filter  : '$line' vs '$f'" if $f;
                 }
             }
             return if $skip;
@@ -171,9 +170,9 @@ sub run {
         $i++;
         $i = 0 if $i==@colors;
         if ($dry_run) {
-            INFO "Not running on $host : ".join '; '.@command;
+            INFO "Not running on $host : ".join '; ',@command;
         } else {
-            TRACE "Running on $host : @command";
+            TRACE "Running on $host : ".join ';',@command;
             _queue_command($w,$colors[$i],$env,$host,@command);
         }
     }
