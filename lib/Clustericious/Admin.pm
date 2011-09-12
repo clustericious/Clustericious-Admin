@@ -185,10 +185,11 @@ sub run {
     for my $host (@hosts) {
         $i++;
         $i = 0 if $i==@colors;
+        my $where = (ref $host eq 'ARRAY' ? $host->[-1] : $host);
         if ($dry_run) {
-            INFO "Not running on $host : ".join '; ',@command;
+            INFO "Not running on $where : ".join '; ',@command;
         } else {
-            TRACE "Running on $host : ".join ';',@command;
+            TRACE "Running on $where : ".join ';',@command;
             _queue_command($w,$colors[$i],$env,$host,@command);
         }
     }
