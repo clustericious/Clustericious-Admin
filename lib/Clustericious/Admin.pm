@@ -16,6 +16,10 @@ the command on every host in the named cluster.
 Environment variables can be set using the env entry
 in the configuration file.
 
+=head1 TODO
+
+Handle escaping of quote/meta characters better.
+
 =head1 SEE ALSO
 
 clad
@@ -68,16 +72,17 @@ sub _is_builtin {
 }
 
 sub _queue_command {
-    my ($w,$color,$env,$host,@command) = @_;
+    my ($user,$w,$color,$env,$host,@command) = @_;
 
     my($wtr, $ssh, $err);
     $err = gensym;
     my $ssh_cmd;
+    my $login = $user ? " -l $user " : "";
     if (ref $host eq 'ARRAY') {
-        $ssh_cmd = join ' ', map "ssh $_", @$host;
+        $ssh_cmd = join ' ', map "ssh $login $_", @$host;
         $host = $host->[1];
     } else {
-        $ssh_cmd = "ssh -T $host";
+        $ssh_cmd = "ssh $login -T $host";
     }
     my $pid = open3($wtr, $ssh, $err, "trap '' HUP; $ssh_cmd /bin/sh") or do {
         WARN "Cannot ssh to $host: $!";
@@ -164,6 +169,7 @@ sub run {
     my $class = shift;
     my $opts = shift;
     my $dry_run = $opts->{n};
+    my $user = $opts->{l};
     @colors = () if $opts->{a};
     my $cluster = shift or LOGDIE "Missing cluster";
     my $hosts = _conf->clusters->$cluster(default => '') or LOGDIE "no hosts for cluster $cluster";
@@ -190,7 +196,7 @@ sub run {
             INFO "Not running on $where : ".join '; ',@command;
         } else {
             TRACE "Running on $where : ".join ';',@command;
-            _queue_command($w,$colors[$i],$env,$host,@command);
+            _queue_command($user,$w,$colors[$i],$env,$host,@command);
         }
     }
     if (Log::Log4perl::get_logger()->is_trace) {
