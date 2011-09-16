@@ -84,7 +84,7 @@ sub _queue_command {
     } else {
         $ssh_cmd = "ssh $login -T $host";
     }
-    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; $ssh_cmd /bin/sh") or do {
+    my $pid = open3($wtr, $ssh, $err, "trap '' HUP; $ssh_cmd /bin/sh -e") or do {
         WARN "Cannot ssh to $host: $!";
         return;
     };

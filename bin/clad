@@ -13,7 +13,7 @@ clad -- Clustericious Admin command line tool
 Read a config file containing a cluster name and a command.
 Ssh to every host in the cluster and run the command.
 
-The command will be executed under /bin/sh regardless
+The command(s) will be executed under '/bin/sh -e' regardless
 of the login shell for the remote user.
 
 =head1 OPTIONS
