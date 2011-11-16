@@ -102,11 +102,11 @@ sub _queue_command {
 
     $waiting{$host} = $pid;
 
-    $w->add( $ssh,
+    $w->watch( $ssh,
         on_readable => sub {
             my ($watcher, $handle) = @_;
             if (eof($handle)) {
-                $watcher->remove($handle);
+                $watcher->drop_handle($handle);
                 delete $waiting{$host};
                 if (keys %waiting == 0) {
                     Mojo::IOLoop->timer(1 => sub { Mojo::IOLoop->stop });
@@ -120,12 +120,12 @@ sub _queue_command {
             print "$line\n";
          });
 
-    $w->add(
+    $w->watch(
         $err,
         on_readable => sub {
             my ($watcher, $handle) = @_;
             if (eof($handle)) {
-                $watcher->remove($handle);
+                $watcher->drop_handle($handle);
                 delete $waiting{$host};
                 Mojo::IOLoop->stop unless keys %waiting > 0;
                 return;
