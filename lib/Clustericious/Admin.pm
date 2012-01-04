@@ -103,7 +103,7 @@ sub _queue_command {
     $waiting{$host} = $pid;
 
     $w->watch( $ssh,
-        on_readable => sub {
+        sub {
             my ($watcher, $handle) = @_;
             if (eof($handle)) {
                 $watcher->drop_handle($handle);
@@ -122,7 +122,7 @@ sub _queue_command {
 
     $w->watch(
         $err,
-        on_readable => sub {
+        sub {
             my ($watcher, $handle) = @_;
             if (eof($handle)) {
                 $watcher->drop_handle($handle);
