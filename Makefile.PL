@@ -8,7 +8,7 @@ WriteMakefile
                            'Clustericious::Config' => 0,
                            'Clustericious::Log' => 0,
                            'Log::Log4perl::CommandLine' => 0,
-                           'Mojolicious' => '2.26',
+                           'Mojolicious' => '2.37',
                            'Term::ANSIColor' => 0,
                            'Test::More' => 0
                          },
