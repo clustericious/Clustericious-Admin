@@ -102,7 +102,7 @@ sub _queue_command {
 
     $waiting{$host} = $pid;
 
-    $w->watch( $ssh,
+    $w->io( $ssh,
         sub {
             my ($watcher, $handle) = @_;
             if (eof($handle)) {
@@ -120,7 +120,7 @@ sub _queue_command {
             print "$line\n";
          });
 
-    $w->watch(
+    $w->io(
         $err,
         sub {
             my ($watcher, $handle) = @_;
@@ -153,6 +153,15 @@ sub _queue_command {
             print color 'reset';
             print "$line\n";
          });
+    $w->watch($err,1,0);
+    $w->watch($ssh,1,0);
+    $w->on(error => sub {
+        my ($w,$err) = @_;
+        ERROR "$host : $err";
+        delete $waiting{$host};
+        Mojo::IOLoop->stop unless keys %waiting > 0;
+    });
+
 }
 
 sub clusters {
@@ -188,7 +197,9 @@ sub run {
     my $i = 0;
     my $env = _conf->env(default => {});
     my $w = Mojo::IOLoop->singleton->iowatcher;
+    my @watchers;
     for my $host (@hosts) {
+        my $w = Mojo::IOWatcher->new;
         $i++;
         $i = 0 if $i==@colors;
         my $where = (ref $host eq 'ARRAY' ? $host->[-1] : $host);
@@ -200,9 +211,11 @@ sub run {
         }
     }
     if (Log::Log4perl::get_logger()->is_trace) {
-        Mojo::IOLoop->singleton->recurring(2 => sub {
+        $w->recurring(2 => sub {
                 TRACE "Waiting for hosts : ".(join ' ', keys %waiting);
             });
+        push @watchers, $w;
+        $w->start;
     }
     Mojo::IOLoop->start unless $dry_run;
 }
