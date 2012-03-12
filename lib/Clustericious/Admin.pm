@@ -34,7 +34,7 @@ use IPC::Open3 qw/open3/;
 use Symbol 'gensym';
 use IO::Handle;
 use Term::ANSIColor;
-use Mojo::IOLoop;
+use Mojo::IOWatcher;
 
 use warnings;
 use strict;
@@ -73,6 +73,7 @@ sub _is_builtin {
 
 sub _queue_command {
     my ($user,$w,$color,$env,$host,@command) = @_;
+    TRACE "Creating ssh to $host";
 
     my($wtr, $ssh, $err);
     $err = gensym;
@@ -100,17 +101,17 @@ sub _queue_command {
         print $wtr "@cmd\n";
     }
 
+    TRACE "New ssh process to $host, pid $pid";
     $waiting{$host} = $pid;
 
     $w->io( $ssh,
         sub {
-            my ($watcher, $handle) = @_;
+            my ($watcher, $handle, $writable) = @_;
             if (eof($handle)) {
-                $watcher->drop_handle($handle);
+                TRACE "Done with $host (pid $waiting{$host}), dropping handle";
+                $watcher->drop($handle);
                 delete $waiting{$host};
-                if (keys %waiting == 0) {
-                    Mojo::IOLoop->timer(1 => sub { Mojo::IOLoop->stop });
-                }
+                $watcher->stop unless keys %waiting > 0;
                 return;
             }
             chomp (my $line = <$handle>);
@@ -123,13 +124,8 @@ sub _queue_command {
     $w->io(
         $err,
         sub {
-            my ($watcher, $handle) = @_;
-            if (eof($handle)) {
-                $watcher->drop_handle($handle);
-                delete $waiting{$host};
-                Mojo::IOLoop->stop unless keys %waiting > 0;
-                return;
-            }
+            my ($watcher, $handle, $writable) = @_;
+            return if eof($handle);
             my $skip;
             chomp (my $line = <$handle>);
             if (!defined($filtering{$host})) {
@@ -156,10 +152,10 @@ sub _queue_command {
     $w->watch($err,1,0);
     $w->watch($ssh,1,0);
     $w->on(error => sub {
-        my ($w,$err) = @_;
+        my ($watcher,$err) = @_;
         ERROR "$host : $err";
         delete $waiting{$host};
-        Mojo::IOLoop->stop unless keys %waiting > 0;
+        $watcher->stop unless keys %waiting > 0;
     });
 
 }
@@ -196,28 +192,28 @@ sub run {
     DEBUG "Running @command on cluster $cluster";
     my $i = 0;
     my $env = _conf->env(default => {});
-    my $w = Mojo::IOLoop->singleton->iowatcher;
-    my @watchers;
+    my $watcher = Mojo::IOWatcher->new;
     for my $host (@hosts) {
-        my $w = Mojo::IOWatcher->new;
         $i++;
-        $i = 0 if $i==@colors;
-        my $where = (ref $host eq 'ARRAY' ? $host->[-1] : $host);
+        $i = 0 if $i == @colors;
+        my $where = ( ref $host eq 'ARRAY' ? $host->[-1] : $host );
         if ($dry_run) {
-            INFO "Not running on $where : ".join '; ',@command;
+            INFO "Not running on $where : " . join '; ', @command;
         } else {
-            TRACE "Running on $where : ".join ';',@command;
-            _queue_command($user,$w,$colors[$i],$env,$host,@command);
+            TRACE "Running on $where : " . join ';', @command;
+            _queue_command( $user, $watcher, $colors[$i], $env, $host, @command );
+        }
+        if ( Log::Log4perl::get_logger()->is_trace ) {
+            $watcher->recurring(
+                2 => sub {
+                    TRACE "Waiting for $host (pid $waiting{$host})" if $waiting{$host};
+                    TRACE "Not waiting for any host" unless keys %waiting;
+                }
+            );
         }
     }
-    if (Log::Log4perl::get_logger()->is_trace) {
-        $w->recurring(2 => sub {
-                TRACE "Waiting for hosts : ".(join ' ', keys %waiting);
-            });
-        push @watchers, $w;
-        $w->start;
-    }
-    Mojo::IOLoop->start unless $dry_run;
+    $watcher->recurring(1 => sub { TRACE "tick" } );
+    $watcher->start unless $dry_run;
 }
 
 1;
