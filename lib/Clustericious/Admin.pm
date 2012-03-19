@@ -39,7 +39,7 @@ use Mojo::IOWatcher;
 use warnings;
 use strict;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
