@@ -34,7 +34,7 @@ use IPC::Open3 qw/open3/;
 use Symbol 'gensym';
 use IO::Handle;
 use Term::ANSIColor;
-use Mojo::IOWatcher;
+use Mojo::Reactor;
 
 use warnings;
 use strict;
@@ -106,15 +106,15 @@ sub _queue_command {
 
     $w->io( $ssh,
         sub {
-            my ($watcher, $handle, $writable) = @_;
-            if (eof($handle)) {
-                TRACE "Done with $host (pid $waiting{$host}), dropping handle";
-                $watcher->drop($handle);
+            my ($readable, $writable) = @_;
+            if (eof($ssh)) {
+                TRACE "Done with $host (pid $waiting{$host}), removing handle";
+                $w->remove($ssh);
                 delete $waiting{$host};
-                $watcher->stop unless keys %waiting > 0;
+                $w->stop unless keys %waiting > 0;
                 return;
             }
-            chomp (my $line = <$handle>);
+            chomp (my $line = <$ssh>);
             print color $color if @colors;
             print "[$host] ";
             print color 'reset' if @colors;
@@ -124,10 +124,10 @@ sub _queue_command {
     $w->io(
         $err,
         sub {
-            my ($watcher, $handle, $writable) = @_;
-            return if eof($handle);
+            my ($readable, $writable) = @_;
+            return if eof($err);
             my $skip;
-            chomp (my $line = <$handle>);
+            chomp (my $line = <$err>);
             if (!defined($filtering{$host})) {
                 $filtering{$host} = [ @filter ];
             } elsif ($line eq (' 'x 6).('-' x 63) && !@{ $filtering{$host} }) {
@@ -152,10 +152,10 @@ sub _queue_command {
     $w->watch($err,1,0);
     $w->watch($ssh,1,0);
     $w->on(error => sub {
-        my ($watcher,$err) = @_;
+        my ($reactor,$err) = @_;
         ERROR "$host : $err";
         delete $waiting{$host};
-        $watcher->stop unless keys %waiting > 0;
+        $reactor->stop unless keys %waiting > 0;
     });
 
 }
@@ -192,7 +192,7 @@ sub run {
     DEBUG "Running @command on cluster $cluster";
     my $i = 0;
     my $env = _conf->env(default => {});
-    my $watcher = Mojo::IOWatcher->new;
+    my $watcher = Mojo::Reactor->detect->new;
     for my $host (@hosts) {
         $i++;
         $i = 0 if $i == @colors;
