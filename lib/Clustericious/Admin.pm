@@ -39,7 +39,7 @@ use Mojo::Reactor;
 use warnings;
 use strict;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
