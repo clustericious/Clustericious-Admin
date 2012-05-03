@@ -43,6 +43,7 @@ our $VERSION = '0.18';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
+our $SSHCMD = "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o PasswordAuthentication=no";
 our @filter = ( (split /\n/, <<DONE), "", "", "" );
 
       ---------------------------------------------------------------
@@ -80,10 +81,10 @@ sub _queue_command {
     my $ssh_cmd;
     my $login = $user ? " -l $user " : "";
     if (ref $host eq 'ARRAY') {
-        $ssh_cmd = join ' ', map "ssh $login $_", @$host;
+        $ssh_cmd = join ' ', map "$SSHCMD $login $_", @$host;
         $host = $host->[1];
     } else {
-        $ssh_cmd = "ssh $login -T $host";
+        $ssh_cmd = "$SSHCMD $login -T $host";
     }
     my $pid = open3($wtr, $ssh, $err, "trap '' HUP; $ssh_cmd /bin/sh -e") or do {
         WARN "Cannot ssh to $host: $!";
