@@ -82,6 +82,12 @@ A sample configuration file ~/etc/Clad.conf :
         devarch:
             - devarch11
             - devarch12
+        devmds:
+    %# Note that this env hash will be merged with the base env at the top
+            env  :
+                USER : bob
+            hosts :
+                 - omidevmds1
         testarch:
             proxy : omitest.omisips.gsfc.nasa.gov
             hosts :
