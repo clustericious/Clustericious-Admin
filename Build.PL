@@ -9,6 +9,7 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Clustericious/Admin.pm',
     requires => {
         'Test::More'            => 0,
+        'Hash::Merge'           => 0,
         'Term::ANSIColor'       => 0,
         'Mojolicious'           => '2.69',
         'Clustericious::Config' => 0,

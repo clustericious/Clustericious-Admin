@@ -16,6 +16,7 @@ the command on every host in the named cluster.
 Environment variables can be set using the env entry
 in the configuration file.
 
+
 =head1 TODO
 
 Handle escaping of quote/meta characters better.
@@ -34,7 +35,9 @@ use IPC::Open3 qw/open3/;
 use Symbol 'gensym';
 use IO::Handle;
 use Term::ANSIColor;
+use Hash::Merge qw/merge/;
 use Mojo::Reactor;
+use Data::Dumper;
 
 use warnings;
 use strict;
@@ -179,20 +182,35 @@ sub run {
     @colors = () if $opts->{a};
     my $cluster = shift or LOGDIE "Missing cluster";
     my $hosts = _conf->clusters->$cluster(default => '') or LOGDIE "no hosts for cluster $cluster";
+    my $cluster_env = {};
     my @hosts;
     if (ref $hosts eq 'ARRAY') {
         @hosts = @$hosts;
     } else {
-        my $proxy = $hosts->proxy(default => '');
-        @hosts = map [ $proxy, $_ ], $hosts->hosts;
+        @hosts = $hosts->hosts;
+        if (my $proxy = $hosts->proxy(default => '')) {
+            @hosts = map [ $proxy, $_ ], @hosts;
+        }
+        $cluster_env = $hosts->{env} || {};
     }
     LOGDIE "no hosts found" unless @hosts;
     my $alias = $_[0] or LOGDIE "No command given";
-    my @command = _conf->aliases->$alias(default => "@_" );
+
+    my @command;
+    if (my $command = _conf->aliases->{$alias}) {
+        DEBUG "Found alias $alias";
+        @command = ref $command ? @$command : ( $command );
+    } else {
+        DEBUG "No alias $alias using @_";
+        @command = @_;
+    }
+    LOGDIE "No command" unless @command && $command[0];
     s/\$CLUSTER/$cluster/ for @command;
     DEBUG "Running @command on cluster $cluster";
     my $i = 0;
-    my $env = _conf->env(default => {});
+    my $env = _conf->{env} || {};
+    $env = merge( $cluster_env, $env );
+    TRACE "Env : ".Dumper($env);
     my $watcher = Mojo::Reactor->detect->new;
     for my $host (@hosts) {
         $i++;
