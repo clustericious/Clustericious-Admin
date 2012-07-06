@@ -42,7 +42,7 @@ use Data::Dumper;
 use warnings;
 use strict;
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;

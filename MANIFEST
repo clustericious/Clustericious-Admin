@@ -8,3 +8,4 @@ META.yml
 README
 t/00-load.t
 t/pod.t
+META.json
