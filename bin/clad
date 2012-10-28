@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-clad -- Clustericious Admin command line tool
+clad -- A simple parallel ssh client.
 
 =head1 SYNOPSIS
 
@@ -43,9 +43,9 @@ Specify a login name for all ssh connections (proxies, too).
 
 =head1 CONFIGURATION
 
-The configuration file is a Clustericious::Config
-file (yaml or json, Mojo templates) and
-has three sections :
+The configuration file is a L<Clustericious::Config>
+file (yaml or json, Mojo templates) and has three
+ sections :
 
 env : sets the environment for all commands.
 Environment settings will be added to any

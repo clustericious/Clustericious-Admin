@@ -1,21 +1,14 @@
 =head1 NAME
 
-Clustericious::Admin - Administer clustericious clusters.
+Clustericious::Admin - Simple parallel ssh client.
 
 =head1 DESCRIPTION
 
-This is a tool for executing commands on all the hosts
-within a cluster.
+This is a simple parallel ssh client, with a verbose
+configuration syntax for running ssh commands on various
+clusters of machines.
 
-A configuration file specifies hosts in a cluster,
-command aliases, and environment settings.
-
-Then typing "clad <cluster> <command>" runs
-the command on every host in the named cluster.
-
-Environment variables can be set using the env entry
-in the configuration file.
-
+Most of the documentation is in the command line tool L<clad>.
 
 =head1 TODO
 
@@ -23,7 +16,7 @@ Handle escaping of quote/meta characters better.
 
 =head1 SEE ALSO
 
-clad
+L<clad>
 
 =cut
 
