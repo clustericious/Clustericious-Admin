@@ -30,7 +30,7 @@ of the login shell for the remote user.
 
 =item * Host chaining support
 
-=item * Perlish configuration for dynamic lists of hosts
+=item * Perlish configuration for dynamic cluster settings
 
 =item * Command aliases
 
@@ -143,8 +143,11 @@ For instance :
 
 =head1 SEE ALSO
 
- L<Log::Log4perl::CommandLine>
+ L<Clustericious::Admin>
  L<Clustericious::Config>
+ L<Log::Log4perl::CommandLine>
+
+ L<SSH::Batch>, L<Net::OpenSSH::Parallel>, L<Net::SSH::Mechanize>, L<helm>
 
 =cut
 

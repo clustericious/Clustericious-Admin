@@ -14,10 +14,6 @@ Most of the documentation is in the command line tool L<clad>.
 
 Handle escaping of quote/meta characters better.
 
-=head1 SEE ALSO
-
-L<clad>, L<SSH::Batch>
-
 =cut
 
 package Clustericious::Admin;
