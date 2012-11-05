@@ -1,12 +1,12 @@
 ---
-abstract: 'Administer clustericious clusters.'
+abstract: 'Simple parallel ssh client.'
 author:
   - 'Brian Duggan <brian.duggan@nasa.gov>'
 build_requires: {}
 configure_requires:
-  Module::Build: 0.4
+  Module::Build: 0.40
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Module::Build version 0.4003, CPAN::Meta::Converter version 2.112621'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -15,7 +15,7 @@ name: Clustericious-Admin
 provides:
   Clustericious::Admin:
     file: lib/Clustericious/Admin.pm
-    version: 0.20
+    version: 0.21
 requires:
   Clustericious::Config: 0
   Clustericious::Log: 0
@@ -26,4 +26,4 @@ requires:
   Test::More: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.20
+version: 0.21
