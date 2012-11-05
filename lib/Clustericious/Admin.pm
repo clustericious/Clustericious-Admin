@@ -16,7 +16,7 @@ Handle escaping of quote/meta characters better.
 
 =head1 SEE ALSO
 
-L<clad>
+L<clad>, L<SSH::Batch>
 
 =cut
 

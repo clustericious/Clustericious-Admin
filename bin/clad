@@ -20,6 +20,22 @@ may also contain command aliases and environment settings.
 The command(s) will be executed under '/bin/sh -e' regardless
 of the login shell for the remote user.
 
+=head1 FEATURES
+
+=over
+
+=item * Cluster-specific and global environment settings
+
+=item * Event-driven unbuffered output (using L<Mojo::Reactor>)
+
+=item * Host chaining support
+
+=item * Perlish configuration for dynamic lists of hosts
+
+=item * Command aliases
+
+=back
+
 =head1 OPTIONS
 
 =over
@@ -41,14 +57,14 @@ Specify a login name for all ssh connections (proxies, too).
 
 =head1 EXAMPLES
 
- clad -n devarch uname -a
- clad devarch df -kh
- clad --trace root devarch ping -i 1 localhost
+ clad -n mailhosts uname -a
+ clad webservers df -kh
+ clad --trace root webservers ping -i 1 localhost
 
 =head1 CONFIGURATION
 
 The configuration file is a L<Clustericious::Config>
-file (YAML or JSON Mojo templates) and has three
+file (YAML or JSON L<Mojo::Template>'s ) and has three
 sections :
 
 env : environment settings for all commands
@@ -98,10 +114,21 @@ A sample configuration file ~/etc/Clad.conf :
                 - testweb1
                 - testweb2
     aliases :
+        check_ports : lsof -i -n
         startweb : nginx start
         config_pull :
             - cd /usr/local/etc
             - git pull
+
+Another example, using L<Mojo::Template> features :
+
+    ---
+    env :
+        PATH : /usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/bin
+        PERL5LIB : /home/joe/perl5
+    clusters :
+        mailers    : [ <%= join ',', map "mail".$_, 0..10 %> ],
+        webservers : [ <%= `/usr/local/bin/list_my_web_servers` %> ]
 
 =head1 NOTES
 
