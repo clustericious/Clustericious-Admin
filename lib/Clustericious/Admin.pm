@@ -123,7 +123,7 @@ sub _queue_command {
         sub {
             my ($readable, $writable) = @_;
             unless (kill 0, $pid) {
-                WARN "$pid is dead (stdin)";
+                TRACE "$pid is dead (stdin)";
                 $w->remove($ssh);
                 #$next->() if $next;
                 #undef $next;
@@ -145,7 +145,7 @@ sub _queue_command {
             my ($readable, $writable) = @_;
             state $filters = [];
             unless (kill 0, $pid) {
-                WARN "$pid is dead (err)";
+                TRACE "$pid is dead (err)";
                 $w->remove($err);
                 return;
             }
@@ -308,7 +308,7 @@ sub run {
                     $cb->();
                 }
                 unless (keys %waiting) {
-                    INFO "we are done";
+                    DEBUG "we are done";
                     $watcher->stop;
                 }
             }
