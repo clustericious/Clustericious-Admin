@@ -32,7 +32,6 @@ use Hash::Merge qw/merge/;
 use Mojo::Reactor;
 use Data::Dumper;
 use Clone qw/clone/;
-use POSIX ":sys_wait_h";
 use 5.10.0;
 
 use warnings;
@@ -40,8 +39,8 @@ use strict;
 
 our $VERSION = '0.21';
 our @colors = qw/cyan green/;
-our %waiting;   # keyed on host
-our %waitqueue; # keyed on pid
+our %waiting;
+our %filtering;
 our $SSHCMD = "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o PasswordAuthentication=no";
 
 sub _conf {
@@ -67,10 +66,7 @@ sub _is_builtin {
 
 sub _queue_command {
     my ($user,$w,$color,$env,$host,@command) = @_;
-    DEBUG "Creating ssh to $host";
-    my $next;
-    $next = pop @command if ref($command[-1]) eq 'CODE';
-    DEBUG "next is $next" if $next;
+    TRACE "Creating ssh to $host";
 
     my($wtr, $ssh, $err);
     $err = gensym;
@@ -98,23 +94,19 @@ sub _queue_command {
         print $wtr "@cmd\n";
     }
 
-    DEBUG "New ssh process to $host, pid $pid (@command)";
+    TRACE "New ssh process to $host, pid $pid";
     $waiting{$host} = $pid;
-    if ($next) {
-        $waitqueue{$pid} = $next;
-    }
 
     $w->io( $ssh,
         sub {
             my ($readable, $writable) = @_;
-            unless (kill 0, $pid) {
-                TRACE "$pid is dead (stdin)";
+            if (eof($ssh)) {
+                TRACE "Done with $host (pid $waiting{$host}), removing handle";
                 $w->remove($ssh);
-                #$next->() if $next;
-                #undef $next;
+                delete $waiting{$host};
+                $w->stop unless keys %waiting > 0;
                 return;
             }
-            return if eof($ssh);
             chomp (my $line = <$ssh>);
             print color $color if @colors;
             print "[$host] ";
@@ -128,11 +120,6 @@ sub _queue_command {
         sub {
             my ($readable, $writable) = @_;
             state $filters = [];
-            unless (kill 0, $pid) {
-                TRACE "$pid is dead (err)";
-                $w->remove($err);
-                return;
-            }
             return if eof($err);
             my $skip;
             chomp (my $line = <$err>);
@@ -166,7 +153,7 @@ sub _queue_command {
         delete $waiting{$host};
         $reactor->stop unless keys %waiting > 0;
     });
-    TRACE "queued command @command on $host";
+
 }
 
 sub clusters {
@@ -177,30 +164,6 @@ sub clusters {
 sub aliases {
     my %aliases = _conf->aliases(default => {});
     return sort keys %aliases;
-}
-
-sub generate_command_sequence {
-    my $arg = shift;
-
-    # returns ( { command => [...], user => ... }, { command => [...], user => ... } );
-    if (my $alias = _conf->aliases(default => {})->{$arg}) {
-        DEBUG "Found alias $arg";
-        my @cmd = (ref $alias ? @$alias : ( $alias ), @_ );
-        return ( { command => \@cmd } );
-    }
-    if (my $macro = _conf->macros(default => {})->{$arg}) {
-        DEBUG "Found macro $arg";
-        my @cmd;
-        for (@$macro) {
-            for my $got (generate_command_sequence($_->{command})) {
-                $got->{user} = $_->{login};
-                push @cmd, $got;
-            }
-        }
-        return @cmd;
-    }
-
-    return ( { command => [ $arg, @_ ] } );
 }
 
 sub run {
@@ -225,17 +188,19 @@ sub run {
         $cluster_env = $hosts->{env} || {};
     }
     LOGDIE "no hosts found" unless @hosts;
-    LOGDIE "No command given" unless $_[0];
+    my $alias = $_[0] or LOGDIE "No command given";
 
-    my @command_sequence = generate_command_sequence(@_);
-
-    for (@command_sequence) {
-        LOGDIE "No command" unless $_->{command} && $_->{command}[0];
-        s/\$CLUSTER/$cluster/ for @{ $_->{command} };
-        do { $_->{user} ||= $user } if $user;
-        my $msg = $_->{user} ? "as $_->{user} " : "";
-        DEBUG "Will run @{ $_->{command} } ${msg}on cluster $cluster";
+    my @command;
+    if (my $command = _conf->aliases(default => {})->{$alias}) {
+        DEBUG "Found alias $alias";
+        @command = ref $command ? @$command : ( $command );
+    } else {
+        DEBUG "No alias $alias using @_";
+        @command = @_;
     }
+    LOGDIE "No command" unless @command && $command[0];
+    s/\$CLUSTER/$cluster/ for @command;
+    DEBUG "Running @command on cluster $cluster";
     my $i = 0;
     my $env = _conf->{env} || {};
     $env = merge( $cluster_env, $env );
@@ -245,28 +210,12 @@ sub run {
         $i++;
         $i = 0 if $i == @colors;
         my $where = ( ref $host eq 'ARRAY' ? $host->[-1] : $host );
-
         if ($dry_run) {
-            for my $cmd (@command_sequence) {
-                my @command = @{ $cmd->{command} };
-                INFO "Not running on $where : " . join '; ', @command;
-            }
-            exit;
+            INFO "Not running on $where : " . join '; ', @command;
+        } else {
+            TRACE "Running on $where : " . join ';', @command;
+            _queue_command( $user, $watcher, $colors[$i], $env, $host, @command );
         }
-
-        my $last;
-        for my $cmd (@command_sequence) {
-            my @command = @{ $cmd->{command} };
-            my $next = $last;
-            DEBUG "queuing @command (".($cmd->{user} // '<default>').") next is ".($next//'undef');
-            $last = sub {
-                DEBUG "Running on $where as ".($cmd->{user} || '<default>')." : " . join ';', @command;
-                DEBUG "Will run another command afterwards." if $next;
-                _queue_command( $cmd->{user}, $watcher, $colors[$i], $env, $host, @command, ( $next ? $next : () ) );
-            };
-        }
-        $last->();
-
         if ( Log::Log4perl::get_logger()->is_trace ) {
             $watcher->recurring(
                 2 => sub {
@@ -276,35 +225,8 @@ sub run {
             );
         }
     }
-    $watcher->recurring(
-        1 => sub {
-            do { delete $waiting{$_} unless kill 0, $waiting{$_} }
-              for keys %waiting;
-            TRACE "tick.  Waiting : " . scalar keys %waiting;
-        }
-    );
-    $watcher->recurring(
-        0 => sub {
-            while ( ( my $pid = waitpid( -1, WNOHANG ) ) > 0 ) {
-                DEBUG "Reaped child pid: $pid";
-                my ($host) = grep { $waiting{$_} == $pid } keys %waiting;
-                unless ($host) {
-                    WARN "Cannot find host for pid $pid";
-                    next;
-                }
-                delete $waiting{$host};
-                if (my $cb = delete $waitqueue{$pid}) {
-                    $cb->();
-                }
-                unless (keys %waiting) {
-                    DEBUG "we are done";
-                    $watcher->stop;
-                }
-            }
-            $watcher->stop unless keys %waiting || keys %waitqueue;
-        }
-    );
-    $watcher->start;
+    $watcher->recurring(1 => sub { TRACE "tick" } );
+    $watcher->start unless $dry_run;
 }
 
 1;
