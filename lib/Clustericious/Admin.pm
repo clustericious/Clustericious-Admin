@@ -65,21 +65,6 @@ sub _is_builtin {
     return $_[0] =~ /^cd /;
 }
 
-sub done_watching {
-        my ($w,$host,$ssh,$next) = @_;
-        return unless $waiting{$host};
-        INFO "Done with $host (pid $waiting{$host}), removing handle";
-        delete $waiting{$host};
-        $w->remove($ssh);
-        if ($$next) {
-            DEBUG "Running next command.";
-            $$next->();
-            undef $$next;
-        }
-        #$w->stop unless keys %waiting > 0;
-        return;
-};
-
 sub _queue_command {
     my ($user,$w,$color,$env,$host,@command) = @_;
     DEBUG "Creating ssh to $host";
@@ -129,7 +114,6 @@ sub _queue_command {
                 #undef $next;
                 return;
             }
-            #return done_watching($w,$host,$ssh,\$next) unless kill 0, $pid;
             return if eof($ssh);
             chomp (my $line = <$ssh>);
             print color $color if @colors;
@@ -149,7 +133,6 @@ sub _queue_command {
                 $w->remove($err);
                 return;
             }
-            #return done_watching($w,$host,$ssh,\$next) unless kill 0, $pid;
             return if eof($err);
             my $skip;
             chomp (my $line = <$err>);
@@ -272,10 +255,10 @@ sub run {
         }
 
         my $last;
-        while (my $cmd  = pop @command_sequence) {
+        for my $cmd (@command_sequence) {
             my @command = @{ $cmd->{command} };
             my $next = $last;
-            DEBUG "queuing @command ($cmd->{user}) next is ".($next// 'undef');
+            DEBUG "queuing @command (".($cmd->{user} // '<default>').") next is ".($next//'undef');
             $last = sub {
                 DEBUG "Running on $where as ".($cmd->{user} || '<default>')." : " . join ';', @command;
                 DEBUG "Will run another command afterwards." if $next;
@@ -293,7 +276,13 @@ sub run {
             );
         }
     }
-    $watcher->recurring(1 => sub { TRACE "tick" } );
+    $watcher->recurring(
+        1 => sub {
+            do { delete $waiting{$_} unless kill 0, $waiting{$_} }
+              for keys %waiting;
+            TRACE "tick.  Waiting : " . scalar keys %waiting;
+        }
+    );
     $watcher->recurring(
         0 => sub {
             while ( ( my $pid = waitpid( -1, WNOHANG ) ) > 0 ) {
@@ -312,6 +301,7 @@ sub run {
                     $watcher->stop;
                 }
             }
+            $watcher->stop unless keys %waiting || keys %waitqueue;
         }
     );
     $watcher->start;
