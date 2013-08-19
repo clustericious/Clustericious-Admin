@@ -182,11 +182,13 @@ For instance :
 
 =head1 SEE ALSO
 
- L<Clustericious::Admin>
- L<Clustericious::Config>
- L<Log::Log4perl::CommandLine>
-
- L<SSH::Batch>, L<Net::OpenSSH::Parallel>, L<Net::SSH::Mechanize>, L<helm>
+L<Clustericious::Admin>,
+L<Clustericious::Config>,
+L<Log::Log4perl::CommandLine>,
+L<SSH::Batch>,
+L<Net::OpenSSH::Parallel>,
+L<Net::SSH::Mechanize>,
+L<helm>
 
 =cut
 
