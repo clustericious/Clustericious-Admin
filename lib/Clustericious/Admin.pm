@@ -44,7 +44,7 @@ sub _conf {
 
  my $banners = Clustericious::Admin->banners;
 
-return the banners from the configuration file as a list reference.
+return the banners from the configuration file as a list.
 
 =cut
 
@@ -56,7 +56,7 @@ sub banners {
         my @lines = $_->{text} =~ /^(.*)$/mg;
         $_->{lines} = \@lines;
     }
-    return $banners;
+    return @$banners;
 }
 
 sub _is_builtin {
@@ -113,7 +113,7 @@ sub _queue_command {
             print "$line\n";
          });
 
-    my $banners = banners();
+    my $banners = [banners()];
     $w->io(
         $err,
         sub {

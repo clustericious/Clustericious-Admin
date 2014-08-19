@@ -22,7 +22,7 @@ Most of the documentation is in the command line tool L<clad>.
 
  my $banners = Clustericious::Admin->banners;
 
-return the banners from the configuration file as a list reference.
+return the banners from the configuration file as a list.
 
 =head2 clusters
 
