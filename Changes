@@ -1,6 +1,8 @@
 Release history for Clustericious-Admin
 
 {{$NEXT}}
+
+0.24      2014-08-19 16:17:41 America/New_York
   - migrate to Dist::Zilla
   - better documentation coverage
   - do not use ansi color if standard out is not a terminal
