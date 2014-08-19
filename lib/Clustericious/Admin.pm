@@ -98,7 +98,6 @@ sub _queue_command {
 
     $w->io( $ssh,
         sub {
-            my ($readable, $writable) = @_;
             if (eof($ssh)) {
                 TRACE "Done with $host (pid $waiting{$host}), removing handle";
                 $w->remove($ssh);
@@ -117,7 +116,6 @@ sub _queue_command {
     $w->io(
         $err,
         sub {
-            my ($readable, $writable) = @_;
             state $filters = [];
             return if eof($err);
             my $skip;
@@ -207,14 +205,13 @@ Set to true to turn off color
 =cut
 
 sub run {
-    my $class = shift;
-    my $opts = shift;
+    my(undef, $opts, $cluster) = @_;
     my $dry_run = $opts->{n};
     my $user = $opts->{l};
     local @colors = @colors;
     @colors = () if $opts->{a};
     @colors = () unless -t STDOUT;
-    my $cluster = shift or LOGDIE "Missing cluster";
+    LOGDIE "Missing cluster" unless defined $cluster;
     my $clusters = _conf->clusters(default => '') or LOGDIE "no clusters defined";
     ref($clusters) =~ /config/i or LOGDIE "clusters should be a yaml hash";
     my $hosts = $clusters->$cluster(default => '') or LOGDIE "no hosts for cluster $cluster";
