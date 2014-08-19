@@ -184,7 +184,9 @@ sub aliases {
  Clustericious::Admin->run(\%options, $cluster, $command);
 
 Run the given command on all the hosts in the given cluster.
-Options include:
+Returns the exit value for the equivalent clad command, which
+is currently always 0, but in the future might be non-zero
+for failure.  Options include:
 
 =over 4
 
@@ -266,6 +268,8 @@ sub run {
     }
     $watcher->recurring(1 => sub { TRACE "tick" } );
     $watcher->start unless $dry_run;
+    
+    0;
 }
 
 1;

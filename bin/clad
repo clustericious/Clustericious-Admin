@@ -22,12 +22,12 @@ unless (@ARGV >=2 ) {
     say "usage $0 <cluster> <command>";
     say "Available clusters : ".join ' ', Clustericious::Admin->clusters(default => []);
     say "Available aliases  : ".join ' ', Clustericious::Admin->aliases(default => []);
-    exit;
+    exit 2;
 }
 
 my %opts;
 getopts('nal:',\%opts);
-Clustericious::Admin->run(\%opts,@ARGV);
+exit Clustericious::Admin->run(\%opts,@ARGV);
 
 1;
 
