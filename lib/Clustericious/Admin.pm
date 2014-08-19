@@ -139,9 +139,9 @@ sub _queue_command {
                 }
             }
             return if $skip;
-            print color $color;
+            print color $color if @colors;
             print "[$host (stderr)] ";
-            print color 'reset';
+            print color 'reset' if @colors;
             print "$line\n";
          });
     $w->watch($err,1,0);
@@ -211,7 +211,9 @@ sub run {
     my $opts = shift;
     my $dry_run = $opts->{n};
     my $user = $opts->{l};
+    local @colors = @colors;
     @colors = () if $opts->{a};
+    @colors = () unless -t STDOUT;
     my $cluster = shift or LOGDIE "Missing cluster";
     my $clusters = _conf->clusters(default => '') or LOGDIE "no clusters defined";
     ref($clusters) =~ /config/i or LOGDIE "clusters should be a yaml hash";
