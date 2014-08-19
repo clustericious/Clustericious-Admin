@@ -7,9 +7,6 @@ install:
   - cpanm Log::Log4perl::CommandLine
   - cpanm Mojolicious
 
-before_script:
-  - perl Build.PL
-
 script: HARNESS_IS_VERBOSE=1 prove -lvr t
 
 perl:
