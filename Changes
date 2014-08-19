@@ -1,5 +1,8 @@
 Release history for Clustericious-Admin
 
+{{$NEXT}}
+  - migrate to Dist::Zilla
+
 0.23 Mon Aug 19 07:36:09 EDT 2013
   - increment version number this time
 

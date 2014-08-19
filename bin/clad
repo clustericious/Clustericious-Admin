@@ -1,8 +1,35 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
-=head1 NAME
+use strict;
+use warnings;
+use feature 'say';
+use File::Basename 'dirname';
+use File::Spec;
+use Log::Log4perl::CommandLine (':all', ':loginit' => <<"EOT");
+           log4perl.rootLogger = INFO, Screen
+           log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
+           log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
+           log4perl.appender.Screen.layout.ConversionPattern = @{[ $ENV{HARNESS_ACTIVE} ? '#' : '' ]} [%-5p] %d %F{1} (%L) %m %n
+EOT
+use Clustericious::Admin;
+use Getopt::Std qw/getopts/;
 
-clad -- A simple parallel ssh client.
+# PODNAME: clad
+# ABSTRACT: A simple parallel ssh client.
+
+unless (@ARGV >=2 ) {
+    say "Not enough arguments : @ARGV";
+    say "usage $0 <cluster> <command>";
+    say "Available clusters : ".join ' ', Clustericious::Admin->clusters(default => []);
+    say "Available aliases  : ".join ' ', Clustericious::Admin->aliases(default => []);
+    exit;
+}
+
+my %opts;
+getopts('nal:',\%opts);
+Clustericious::Admin->run(\%opts,@ARGV);
+
+1;
 
 =head1 SYNOPSIS
 
@@ -191,35 +218,4 @@ L<Net::SSH::Mechanize>,
 L<helm>
 
 =cut
-
-use feature 'say';
-use File::Basename 'dirname';
-use File::Spec;
-use Log::Log4perl::CommandLine (':all', ':loginit' => <<"EOT");
-           log4perl.rootLogger = INFO, Screen
-           log4perl.appender.Screen = Log::Log4perl::Appender::ScreenColoredLevels
-           log4perl.appender.Screen.layout = Log::Log4perl::Layout::PatternLayout
-           log4perl.appender.Screen.layout.ConversionPattern = @{[ $ENV{HARNESS_ACTIVE} ? '#' : '' ]} [%-5p] %d %F{1} (%L) %m %n
-EOT
-
-use lib join '/', File::Spec->splitdir(dirname(__FILE__)), 'lib';
-use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib';
-use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '..', 'lib', 'perl';
-
-use Clustericious::Admin;
-use Getopt::Std qw/getopts/;
-
-unless (@ARGV >=2 ) {
-    say "Not enough arguments : @ARGV";
-    say "usage $0 <cluster> <command>";
-    say "Available clusters : ".join ' ', Clustericious::Admin->clusters(default => []);
-    say "Available aliases  : ".join ' ', Clustericious::Admin->aliases(default => []);
-    exit;
-}
-
-my %opts;
-getopts('nal:',\%opts);
-Clustericious::Admin->run(\%opts,@ARGV);
-
-1;
 

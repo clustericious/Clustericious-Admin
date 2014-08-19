@@ -1,0 +1,40 @@
+=pod
+
+=head1 NAME
+
+Clustericious::Admin - Simple parallel ssh client.
+
+=head1 VERSION
+
+version 0.23
+
+=head1 DESCRIPTION
+
+This is a simple parallel ssh client, with a verbose
+configuration syntax for running ssh commands on various
+clusters of machines.
+
+Most of the documentation is in the command line tool L<clad>.
+
+=head1 SEE ALSO
+
+L<clad>
+
+=head1 TODO
+
+Handle escaping of quote/meta characters better.
+
+=head1 AUTHOR
+
+original author: Brian Duggan
+
+current maintainer: Graham Ollis <plicease@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2012 by NASA GSFC.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

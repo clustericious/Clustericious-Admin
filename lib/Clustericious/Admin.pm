@@ -1,6 +1,21 @@
-=head1 NAME
+package Clustericious::Admin;
 
-Clustericious::Admin - Simple parallel ssh client.
+use strict;
+use warnings;
+use Clustericious::Config;
+use Clustericious::Log;
+use IPC::Open3 qw/open3/;
+use Symbol 'gensym';
+use IO::Handle;
+use Term::ANSIColor;
+use Hash::Merge qw/merge/;
+use Mojo::Reactor;
+use Data::Dumper;
+use Clone qw/clone/;
+use v5.10;
+
+# ABSTRACT: Simple parallel ssh client.
+# VERSION
 
 =head1 DESCRIPTION
 
@@ -20,24 +35,6 @@ Handle escaping of quote/meta characters better.
 
 =cut
 
-package Clustericious::Admin;
-
-use Clustericious::Config;
-use Clustericious::Log;
-use IPC::Open3 qw/open3/;
-use Symbol 'gensym';
-use IO::Handle;
-use Term::ANSIColor;
-use Hash::Merge qw/merge/;
-use Mojo::Reactor;
-use Data::Dumper;
-use Clone qw/clone/;
-use 5.10.0;
-
-use warnings;
-use strict;
-
-our $VERSION = '0.23';
 our @colors = qw/cyan green/;
 our %waiting;
 our %filtering;
