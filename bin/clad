@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use feature 'say';
+use v5.10;
 use File::Basename 'dirname';
 use File::Spec;
 use Log::Log4perl::CommandLine (':all', ':loginit' => <<"EOT");
