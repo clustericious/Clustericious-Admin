@@ -8,4 +8,5 @@ Log::Log4perl::CommandLine
 Module::Build
 Mojolicious
 Symbol
+Test::Clustericious::Config
 Test::More
