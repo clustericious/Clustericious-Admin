@@ -25,14 +25,6 @@ clusters of machines.
 
 Most of the documentation is in the command line tool L<clad>.
 
-=head1 SEE ALSO
-
-L<clad>
-
-=head1 TODO
-
-Handle escaping of quote/meta characters better.
-
 =cut
 
 our @colors = qw/cyan green/;
@@ -45,6 +37,16 @@ sub _conf {
     $conf ||= Clustericious::Config->new("Clad");
     return $conf;
 }
+
+=head1 FUNCTIONS
+
+=head2 banners
+
+ my $banners = Clustericious::Admin->banners;
+
+return the banners from the configuration file as a list reference.
+
+=cut
 
 sub banners {
     our $banners;
@@ -153,15 +155,56 @@ sub _queue_command {
 
 }
 
+=head2 clusters
+
+ my @clusters = Clustericious::Admin->clusters;
+
+Return the list of clusters in the configuration file
+
+=cut
+
 sub clusters {
     my %clusters = _conf->clusters;
     return sort keys %clusters;
 }
 
+=head2 aliases
+
+ my @aliases = Clustericious::Admin->aliases;
+
+Return the list of aliases from the configuration file
+
+=cut
+
 sub aliases {
     my %aliases = _conf->aliases(default => {});
     return sort keys %aliases;
 }
+
+=head2 run
+
+ Clustericious::Admin->run(\%options, $cluster, $command);
+
+Run the given command on all the hosts in the given cluster.
+Options include:
+
+=over 4
+
+=item n
+
+Set to true for a dry run
+
+=item l
+
+Set to the username that you want to connect to if not using the default.
+
+=item a
+
+Set to true to turn off color
+
+=back
+
+=cut
 
 sub run {
     my $class = shift;
@@ -228,3 +271,12 @@ sub run {
 
 1;
 
+=head1 SEE ALSO
+
+L<clad>
+
+=head1 TODO
+
+Handle escaping of quote/meta characters better.
+
+=cut
