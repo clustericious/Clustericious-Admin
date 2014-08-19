@@ -205,7 +205,7 @@ Set to true to turn off color
 =cut
 
 sub run {
-    my(undef, $opts, $cluster) = @_;
+    my(undef, $opts, $cluster, @cmd) = @_;
     my $dry_run = $opts->{n};
     my $user = $opts->{l};
     local @colors = @colors;
@@ -234,8 +234,8 @@ sub run {
         DEBUG "Found alias $alias";
         @command = ref $command ? @$command : ( $command );
     } else {
-        DEBUG "No alias $alias using @_";
-        @command = @_;
+        DEBUG "No alias $alias using @cmd";
+        @command = @cmd;
     }
     LOGDIE "No command" unless @command && $command[0];
     s/\$CLUSTER/$cluster/ for @command;
