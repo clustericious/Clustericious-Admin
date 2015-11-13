@@ -229,7 +229,7 @@ sub run {
         $cluster_env = $hosts->{env} || {};
     }
     LOGDIE "no hosts found" unless @hosts;
-    my $alias = $_[0] or LOGDIE "No command given";
+    my $alias = $cmd[0] or LOGDIE "No command given";
 
     my @command;
     if (my $command = _conf->aliases(default => {})->{$alias}) {
