@@ -1,12 +1,14 @@
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 clad - A simple parallel ssh client.
 
 =head1 VERSION
 
-version 0.25
+version 0.26
 
 =head1 SYNOPSIS
 
@@ -220,9 +222,9 @@ L<helm>
 
 =head1 AUTHOR
 
-original author: Brian Duggan
+Original author: Brian Duggan
 
-current maintainer: Graham Ollis <plicease@cpan.org>
+Current maintainer: Graham Ollis E<lt>plicease@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

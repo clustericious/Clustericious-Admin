@@ -15,6 +15,7 @@ use Clustericious::Admin;
 use Getopt::Std qw/getopts/;
 
 # PODNAME: clad
+# VERSION
 # ABSTRACT: A simple parallel ssh client.
 
 unless (@ARGV >=2 ) {
