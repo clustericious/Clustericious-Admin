@@ -1,5 +1,8 @@
 Release history for Clustericious-Admin
 
+0.26      2015-11-13 09:39:23EST-0500 America/New_York
+  - Fix bug where aliases were not being used
+
 0.25      2014-12-20 05:43:02 America/New_York
   - cpantesters do not report on older Perls
 

@@ -3,13 +3,13 @@ abstract: 'Simple parallel ssh client.'
 author:
   - 'Graham Ollis <plicease@cpan.org>'
 build_requires:
-  Module::Build: '0.3601'
+  Module::Build: '0.28'
   Test::Clustericious::Config: '0'
   Test::More: '0'
 configure_requires:
-  Module::Build: '0.3601'
+  Module::Build: '0.28'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.006, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Dist::Zilla version 5.039, CPAN::Meta::Converter version 2.150005'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -26,4 +26,4 @@ requires:
   Mojolicious: '2.69'
   Symbol: '0'
   perl: v5.10.0
-version: '0.25'
+version: '0.26'

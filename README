@@ -4,7 +4,7 @@ NAME
 
 VERSION
 
-    version 0.25
+    version 0.26
 
 SYNOPSIS
 
@@ -182,9 +182,9 @@ SEE ALSO
 
 AUTHOR
 
-    original author: Brian Duggan
+    Original author: Brian Duggan
 
-    current maintainer: Graham Ollis <plicease@cpan.org>
+    Current maintainer: Graham Ollis <plicease@cpan.org>
 
 COPYRIGHT AND LICENSE
 

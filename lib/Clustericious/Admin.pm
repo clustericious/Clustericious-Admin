@@ -15,7 +15,7 @@ use Clone qw/clone/;
 use v5.10;
 
 # ABSTRACT: Simple parallel ssh client.
-our $VERSION = '0.25'; # VERSION
+our $VERSION = '0.26'; # VERSION
 
 
 our @colors = qw/cyan green/;
@@ -171,7 +171,7 @@ sub run {
         $cluster_env = $hosts->{env} || {};
     }
     LOGDIE "no hosts found" unless @hosts;
-    my $alias = $_[0] or LOGDIE "No command given";
+    my $alias = $cmd[0] or LOGDIE "No command given";
 
     my @command;
     if (my $command = _conf->aliases(default => {})->{$alias}) {
@@ -216,9 +216,11 @@ sub run {
 
 1;
 
-
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -226,7 +228,7 @@ Clustericious::Admin - Simple parallel ssh client.
 
 =head1 VERSION
 
-version 0.25
+version 0.26
 
 =head1 DESCRIPTION
 
@@ -291,9 +293,9 @@ Handle escaping of quote/meta characters better.
 
 =head1 AUTHOR
 
-original author: Brian Duggan
+Original author: Brian Duggan
 
-current maintainer: Graham Ollis <plicease@cpan.org>
+Current maintainer: Graham Ollis E<lt>plicease@cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
@@ -303,4 +305,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
