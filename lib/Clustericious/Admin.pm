@@ -17,6 +17,21 @@ use v5.10;
 # ABSTRACT: Simple parallel ssh client.
 # VERSION
 
+=head1 NOTE
+
+B<NOTE>: L<clad> and L<Clustericious::Admin> was rewritten from scratch. 
+This repository remains for reference only. The companion module was 
+renamed to L<App::clad>.  Please see the new project git repository 
+here:
+
+=over 5
+
+=item L<https://github.com/plicease/App-clad>
+
+=back
+
+The remaining documentation is for the original.
+
 =head1 DESCRIPTION
 
 This is a simple parallel ssh client, with a verbose
