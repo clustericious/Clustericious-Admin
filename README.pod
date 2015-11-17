@@ -2,6 +2,21 @@
 
 =encoding UTF-8
 
+=head1 NOTE
+
+B<NOTE>: L<clad> and L<Clustericious::Admin> was rewritten from scratch. 
+This repository remains for reference only. The companion module was 
+renamed to L<App::clad>.  Please see the new project git repository 
+here:
+
+=over 5
+
+=item L<https://github.com/plicease/App-clad>
+
+=back
+
+The remaining documentation is for the original.
+
 =head1 NAME
 
 clad - A simple parallel ssh client.
@@ -25,21 +40,6 @@ may also contain command aliases and environment settings.
 
 The command(s) will be executed under '/bin/sh -e' regardless
 of the login shell for the remote user.
-
-=head1 NOTE
-
-B<NOTE>: L<clad> and L<Clustericious::Admin> was rewritten from scratch. 
-This repository remains for reference only. The companion module was 
-renamed to L<App::clad>.  Please see the new project git repository 
-here:
-
-=over 5
-
-=item L<https://github.com/plicease/App-clad>
-
-=back
-
-The remaining documentation is for the original.
 
 =head1 FEATURES
 
